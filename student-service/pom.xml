@@ -16,6 +16,13 @@
             <groupId>com.epam.ahnl</groupId>
             <artifactId>student-model</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>io.mockk</groupId>
+            <artifactId>mockk</artifactId>
+            <version>${mock.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
 </project>

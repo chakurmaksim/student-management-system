@@ -7,6 +7,7 @@ import com.epam.ahnl.service.dto.StudentView
 import com.epam.ahnl.service.exception.StudentNotFoundException
 import com.epam.ahnl.service.mapper.toStudent
 import com.epam.ahnl.service.mapper.toStudentView
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.stereotype.Service
@@ -14,7 +15,9 @@ import java.time.LocalDate
 import kotlin.streams.toList
 
 @Service
-class StudentService(private val repository: StudentRepository) {
+class StudentService {
+    @Autowired
+    lateinit var repository: StudentRepository
 
     fun findAll(pageable: org.springframework.data.domain.Pageable): Page<StudentView> {
         val students: Page<Student> = repository.findAll(pageable)
@@ -40,10 +43,11 @@ class StudentService(private val repository: StudentRepository) {
     fun update(studentDto: StudentDto): StudentView {
         val student = studentDto.toStudent()
         val id: String = student.id ?: throw StudentNotFoundException("The student with empty ID does not exists")
-        if (repository.findById(id).isPresent) {
-            student.dateOfModification = LocalDate.now()
-            repository.save(student)
+        if (repository.findById(id).isEmpty) {
+            throw StudentNotFoundException("The student with ID $id does not exists")
         }
+        student.dateOfModification = LocalDate.now()
+        repository.save(student)
         return student.toStudentView()
     }
 
