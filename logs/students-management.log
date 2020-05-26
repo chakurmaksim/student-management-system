@@ -1,4 +1,0 @@
-2020-05-26 00:54:23,950 INFO com.epam.ahnl.StudentManagementSystemApplicationKt [restartedMain] Starting StudentManagementSystemApplicationKt on MacBook-Air-Irin.local with PID 16089 (/Users/maksim/Documents/EPAM/Projects/student-management-system/student-controller/target/classes started by maksim in /Users/maksim/Documents/EPAM/Projects/student-management-system)
-2020-05-26 00:54:23,965 DEBUG com.epam.ahnl.StudentManagementSystemApplicationKt [restartedMain] Running with Spring Boot v2.3.0.RELEASE, Spring v5.2.6.RELEASE
-2020-05-26 00:54:23,966 INFO com.epam.ahnl.StudentManagementSystemApplicationKt [restartedMain] No active profile set, falling back to default profiles: default
-2020-05-26 00:54:29,837 INFO com.epam.ahnl.StudentManagementSystemApplicationKt [restartedMain] Started StudentManagementSystemApplicationKt in 7.336 seconds (JVM running for 9.488)
