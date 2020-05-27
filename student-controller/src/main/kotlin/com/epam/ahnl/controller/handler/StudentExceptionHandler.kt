@@ -14,7 +14,9 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @ControllerAdvice
 class StudentExceptionHandler: ResponseEntityExceptionHandler() {
 
-    private val currentLogger = LoggerFactory.getLogger(StudentExceptionHandler::class.java)
+    companion object {
+        private val currentLogger = LoggerFactory.getLogger(StudentExceptionHandler::class.java)
+    }
 
     @ExceptionHandler(RuntimeException::class)
     fun handleRuntimeException(exception: RuntimeException): ResponseEntity<String> {

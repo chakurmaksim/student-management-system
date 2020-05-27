@@ -5,11 +5,19 @@ import com.epam.ahnl.model.repository.StudentRepository
 import com.epam.ahnl.service.dto.StudentDto
 import com.epam.ahnl.service.dto.StudentView
 import com.epam.ahnl.service.exception.StudentNotFoundException
-import io.mockk.*
+import io.mockk.confirmVerified
+import io.mockk.every
+import io.mockk.MockKAnnotations
+import io.mockk.unmockkAll
+import io.mockk.verify
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
-import org.junit.jupiter.api.*
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.data.domain.Page
@@ -17,7 +25,7 @@ import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import java.time.LocalDate
-import java.util.*
+import java.util.Optional
 
 @ExtendWith(MockKExtension::class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -69,7 +77,7 @@ internal class StudentServiceTest {
     }
 
     @Test
-    fun findById_negativeScenario() {
+    fun shouldThrowExceptionWhenResultFindByIdIsEmpty() {
         every { repository.findById("") } returns Optional.empty()
         val assertThrows: StudentNotFoundException = assertThrows { service.findById("") }
 
@@ -106,7 +114,7 @@ internal class StudentServiceTest {
     }
 
     @Test
-    fun update_negativeScenario() {
+    fun shouldThrowExceptionWhenStudentNotUpdated() {
         every { repository.findById("") } returns Optional.empty()
         val assertThrows: StudentNotFoundException = assertThrows { service.update(StudentDto("",
                 student.firstName, student.lastName, student.birthDate, student.faculty, student.address)) }
