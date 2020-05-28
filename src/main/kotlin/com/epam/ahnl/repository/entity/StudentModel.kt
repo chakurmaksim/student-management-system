@@ -1,4 +1,4 @@
-package com.epam.ahnl.model.entity
+package com.epam.ahnl.repository.entity
 
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
@@ -6,8 +6,8 @@ import org.springframework.data.mongodb.core.mapping.Field
 import java.time.LocalDate
 
 @Document(value = "students")
-data class Student(
-        @Id val id: String? = null,
+data class StudentModel(
+        @Id var id: String? = null,
         @Field(name = "name") val firstName: String,
         @Field(name = "surname") val lastName: String,
         @Field(name = "birth_date") val birthDate: LocalDate,
@@ -26,5 +26,6 @@ data class Student(
             }
         }
 
-    data class Address(val country: String, val city: String, val street: String)
 }
+
+data class Address(val country: String, val city: String, val street: String)

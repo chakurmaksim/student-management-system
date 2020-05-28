@@ -1,5 +1,6 @@
 package com.epam.ahnl.controller
 
+import com.epam.ahnl.controller.response.ResponseMessage
 import com.epam.ahnl.service.StudentService
 import com.epam.ahnl.service.dto.StudentDto
 import com.epam.ahnl.service.dto.StudentView
@@ -9,7 +10,6 @@ import io.swagger.annotations.ApiOperation
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -17,9 +17,9 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
+import java.time.LocalDateTime
 
 @Api(value = "Student Information related interface", tags = ["StudentDto", "StudentView"])
 @RestController
@@ -37,6 +37,7 @@ class StudentController(val service: StudentService) {
 
     @ApiOperation(value = "Get a student by id")
     @GetMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
     fun findById(@PathVariable("id") studentId: String): StudentView {
         return service.findById(studentId)
     }
@@ -46,24 +47,25 @@ class StudentController(val service: StudentService) {
             dataType = "StudentDto")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    fun insertStudent(@RequestBody student: StudentDto): StudentView {
-        return service.insert(student)
+    fun insertStudent(@RequestBody student: StudentDto): ResponseMessage {
+        val message = "studentID: ${service.insert(student).id}"
+        return ResponseMessage(message = message)
     }
 
     @ApiOperation(value = "Update a Student Information")
     @ApiImplicitParam(name = "student", value = "Student Detailed Entities student with studentId number",
             required = true, dataType = "StudentDto")
-    @PutMapping
+    @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    fun updateStudent(@RequestBody student: StudentDto): StudentView {
-        return service.update(student)
+    fun updateStudent(@PathVariable("id") studentId: String, @RequestBody student: StudentDto) {
+        service.update(studentId, student)
     }
 
     @ApiOperation(value = "Delete student information")
     @ApiImplicitParam(name = "studentId", value = "Student number", required = true, dataType = "String")
-    @DeleteMapping
-    fun deleteStudent(@RequestParam("id") studentId: String): ResponseEntity<String> {
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun deleteStudent(@PathVariable("id") studentId: String) {
         service.deleteById(studentId)
-        return ResponseEntity("Student with ID $studentId was deleted successfully", HttpStatus.OK)
     }
 }

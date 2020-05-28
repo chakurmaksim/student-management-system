@@ -1,5 +1,6 @@
 package com.epam.ahnl.controller.handler
 
+import com.epam.ahnl.controller.response.ResponseMessage
 import com.epam.ahnl.service.exception.StudentNotFoundException
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpHeaders
@@ -19,23 +20,23 @@ class StudentExceptionHandler: ResponseEntityExceptionHandler() {
     }
 
     @ExceptionHandler(RuntimeException::class)
-    fun handleRuntimeException(exception: RuntimeException): ResponseEntity<String> {
+    fun handleRuntimeException(exception: RuntimeException): ResponseEntity<Any> {
         return createResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR, exception)
     }
 
     @ExceptionHandler(StudentNotFoundException::class)
-    fun handleNotFoundException(exception: StudentNotFoundException): ResponseEntity<String> {
+    fun handleNotFoundException(exception: StudentNotFoundException): ResponseEntity<Any> {
         return createResponseEntity(HttpStatus.NOT_FOUND, exception)
     }
 
     override fun handleHttpMessageNotReadable(exception: HttpMessageNotReadableException, headers: HttpHeaders,
                                               status: HttpStatus, request: WebRequest): ResponseEntity<Any> {
         currentLogger.error("Exception: ", exception)
-        return ResponseEntity(exception.rootCause?.message, headers, status)
+        return ResponseEntity(exception.rootCause?.message?.let { ResponseMessage(message = it) }, headers, status)
     }
 
-    private fun createResponseEntity(status: HttpStatus, exception: Exception): ResponseEntity<String> {
+    private fun createResponseEntity(status: HttpStatus, exception: Exception): ResponseEntity<Any> {
         currentLogger.error("Exception: ", exception)
-        return ResponseEntity.status(status).body(exception.message)
+        return ResponseEntity.status(status).body(exception.message?.let { ResponseMessage(message =  it) })
     }
 }

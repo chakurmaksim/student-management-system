@@ -1,20 +1,19 @@
 package com.epam.ahnl.service
 
-import com.epam.ahnl.model.entity.Student
-import com.epam.ahnl.model.repository.StudentRepository
+import com.epam.ahnl.repository.entity.Address
+import com.epam.ahnl.repository.entity.StudentModel
+import com.epam.ahnl.repository.StudentRepository
 import com.epam.ahnl.service.dto.StudentDto
 import com.epam.ahnl.service.dto.StudentView
 import com.epam.ahnl.service.exception.StudentNotFoundException
 import io.mockk.confirmVerified
 import io.mockk.every
-import io.mockk.MockKAnnotations
+import io.mockk.mockk
 import io.mockk.unmockkAll
 import io.mockk.verify
-import io.mockk.impl.annotations.InjectMockKs
-import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
-import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -30,21 +29,18 @@ import java.util.Optional
 @ExtendWith(MockKExtension::class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class StudentServiceTest {
-    @MockK
-    lateinit var repository: StudentRepository
-
-    @InjectMockKs
-    var service: StudentService = StudentService()
-    private lateinit var student: Student
-    private lateinit var studentView: StudentView
+    private val repository: StudentRepository = mockk()
+    private val service: StudentService = StudentService(repository)
+    private lateinit var student: StudentModel
+    private lateinit var expectedStudentView: StudentView
+    private val id = "ID"
 
     @BeforeAll
     fun setUp() {
-        MockKAnnotations.init(this)
-        student = Student("ID", "First name", "Last name",
+        student = StudentModel(id, "First name", "Last name",
                 LocalDate.of(2000, 1, 1), "ah",
-                Student.Address("Country", "City", "Street"))
-        studentView = StudentView("ID", "${student.firstName} ${student.lastName}",
+                Address("Country", "City", "Street"))
+        expectedStudentView = StudentView(id, "${student.firstName} ${student.lastName}",
                 student.birthDate, student.faculty, student.address)
     }
 
@@ -55,59 +51,85 @@ internal class StudentServiceTest {
 
     @Test
     fun findAll() {
+        // given
         val pageable: Pageable = PageRequest.of(0, 1)
         val studentList = mutableListOf(student)
-        val studentPage: Page<Student> = PageImpl(studentList, pageable, 1)
-        every { repository.findAll(pageable) } returns studentPage
-        val studentViewList = mutableListOf(studentView)
-        val expectedPage: Page<StudentView> = PageImpl(studentViewList, pageable, 1)
+        val studentPage: Page<StudentModel> = PageImpl(studentList, pageable, 1)
+        val expectedStudentViewList = mutableListOf(expectedStudentView)
+        val expectedPage: Page<StudentView> = PageImpl(expectedStudentViewList, pageable, 1)
 
-        assertEquals(expectedPage, service.findAll(pageable))
+        every { repository.findAll(pageable) } returns studentPage
+
+        // when
+        val actualStudentViewList = service.findAll(pageable)
+
+        // then
+        assertEquals(expectedPage, actualStudentViewList)
         verify { repository.findAll(pageable) }
         confirmVerified(repository)
     }
 
     @Test
     fun findById() {
-        every { repository.findById("ID") } returns Optional.of(student)
+        // given
+        every { repository.findById(id) } returns Optional.of(student)
 
-        assertEquals(studentView, service.findById("ID"))
-        verify { repository.findById("ID") }
+        // when
+        val actualStudentView = service.findById(id)
+
+        // then
+        assertEquals(expectedStudentView, actualStudentView)
+        verify { repository.findById(id) }
         confirmVerified(repository)
     }
 
     @Test
     fun shouldThrowExceptionWhenResultFindByIdIsEmpty() {
+        // given
         every { repository.findById("") } returns Optional.empty()
+
+        // when
         val assertThrows: StudentNotFoundException = assertThrows { service.findById("") }
 
+        // then
         verify { repository.findById("") }
         confirmVerified(repository)
     }
 
     @Test
     fun insert() {
-        val newStudent = Student(null, student.firstName, student.lastName,
+        // given
+        val newStudent = StudentModel(null, student.firstName, student.lastName,
                 student.birthDate, student.faculty, student.address)
-        every { repository.insert(newStudent) } returns student
         val studentDto = StudentDto(newStudent.id, newStudent.firstName, newStudent.lastName,
                 newStudent.birthDate, newStudent.faculty, newStudent.address)
 
-        assertEquals(studentView, service.insert(studentDto))
+        every { repository.insert(newStudent) } returns student
+
+        // when
+        val actualStudentView = service.insert(studentDto)
+
+        // then
+        assertEquals(expectedStudentView, actualStudentView)
         verify { repository.insert(newStudent) }
         confirmVerified(repository)
     }
 
     @Test
     fun update() {
-        every { repository.findById(student.id ?: "ID") } returns Optional.of(student)
-        every { repository.save(student) } answers { Unit }
+        // given
         val studentDto = StudentDto(student.id, student.firstName, student.lastName,
                 student.birthDate, student.faculty, student.address)
 
-        assertEquals(studentView, service.update(studentDto))
+        every { repository.findById(id) } returns Optional.of(student)
+        every { repository.save(student) } answers { Unit }
+
+        // when
+        service.update(id, studentDto)
+
+        // then
         verify {
-            repository.findById("ID")
+            repository.findById(id)
             repository.save(student)
         }
         confirmVerified(repository)
@@ -115,20 +137,28 @@ internal class StudentServiceTest {
 
     @Test
     fun shouldThrowExceptionWhenStudentNotUpdated() {
+        // given
         every { repository.findById("") } returns Optional.empty()
-        val assertThrows: StudentNotFoundException = assertThrows { service.update(StudentDto("",
+
+        // when
+        val assertThrows: StudentNotFoundException = assertThrows { service.update("", StudentDto("",
                 student.firstName, student.lastName, student.birthDate, student.faculty, student.address)) }
 
+        // then
         verify { repository.findById("") }
         confirmVerified(repository)
     }
 
     @Test
     fun deleteById() {
-        every { repository.deleteById(student.id ?: "ID") } answers { Unit }
-        service.deleteById("ID")
+        // given
+        every { repository.deleteById(id) } answers { Unit }
 
-        verify { repository.deleteById("ID") }
+        // when
+        service.deleteById(id)
+
+        // then
+        verify { repository.deleteById(id) }
         confirmVerified(repository)
     }
 }

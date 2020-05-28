@@ -1,6 +1,6 @@
 package com.epam.ahnl.service.dto
 
-import com.epam.ahnl.model.entity.Student
+import com.epam.ahnl.repository.entity.Address
 import java.time.LocalDate
 
 data class StudentDto (
@@ -9,7 +9,7 @@ data class StudentDto (
         val lastName: String,
         val birthDate: LocalDate,
         var faculty: String,
-        var address: Student.Address
+        var address: Address
 ) {
     init {
         require(firstName.length in 3..30) {
